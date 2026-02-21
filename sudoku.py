@@ -1,5 +1,6 @@
-# Example Sudoku board (0 = empty)
-board = [
+# Sudoku Solver using Backtracking
+
+grid = [
     [5, 3, 0, 0, 7, 0, 0, 0, 0],
     [6, 0, 0, 1, 9, 5, 0, 0, 0],
     [0, 9, 8, 0, 0, 0, 0, 6, 0],
@@ -11,57 +12,59 @@ board = [
     [0, 0, 0, 0, 8, 0, 0, 7, 9]
 ]
 
-# Stack to store positions
-stack = []
-row = 0
-col = 0
+def print_grid(grid):
+    for row in grid:
+        print(row)
 
-while row < 9:
-    if board[row][col] == 0:
-        found = False
-        for num in range(1, 10):
-            valid = True
+def find_empty(grid):
+    for i in range(9):
+        for j in range(9):
+            if grid[i][j] == 0:
+                return i, j
+    return None
 
-            # Check row
-            for i in range(9):
-                if board[row][i] == num:
-                    valid = False
+def is_valid(grid, num, pos):
+    row, col = pos
 
-            # Check column
-            for i in range(9):
-                if board[i][col] == num:
-                    valid = False
+    # Check row
+    for i in range(9):
+        if grid[row][i] == num and col != i:
+            return False
 
-            # Check 3x3 box
-            start_row = row - row % 3
-            start_col = col - col % 3
-            for i in range(3):
-                for j in range(3):
-                    if board[start_row + i][start_col + j] == num:
-                        valid = False
+    # Check column
+    for i in range(9):
+        if grid[i][col] == num and row != i:
+            return False
 
-            if valid:
-                board[row][col] = num
-                stack.append((row, col))
-                found = True
-                break
+    # Check 3x3 box
+    box_x = col // 3
+    box_y = row // 3
 
-        if not found:
-            board[row][col] = 0
-            if stack:
-                row, col = stack.pop()
-                board[row][col] += 1
-                continue
-            else:
-                print("No solution exists")
-                break
+    for i in range(box_y * 3, box_y * 3 + 3):
+        for j in range(box_x * 3, box_x * 3 + 3):
+            if grid[i][j] == num and (i, j) != pos:
+                return False
 
-    col += 1
-    if col == 9:
-        col = 0
-        row += 1
+    return True
 
-# Print solved board
-print("Solved Sudoku:")
-for r in board:
-    print(r)
+def solve(grid):
+    find = find_empty(grid)
+    if not find:
+        return True
+    else:
+        row, col = find
+
+    for i in range(1, 10):
+        if is_valid(grid, i, (row, col)):
+            grid[row][col] = i
+
+            if solve(grid):
+                return True
+
+            grid[row][col] = 0
+
+    return False
+
+# Solve and print result
+solve(grid)
+print_grid(grid)
